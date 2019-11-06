@@ -6,25 +6,24 @@ import com.whitedeath.organizationchart.Model.Employee;
 import com.whitedeath.organizationchart.Model.PutEmployee;
 import com.whitedeath.organizationchart.Repository.DesignationRepo;
 import com.whitedeath.organizationchart.Repository.EmployeeRepo;
-import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.testng.annotations.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.testng.Assert.assertEquals;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @AutoConfigureMockMvc
-class EmployeeControllerTest {
+
+public class EmployeeControllerTest extends AbstractTestNGSpringContextTests {
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,10 +34,10 @@ class EmployeeControllerTest {
     @Autowired
     private DesignationRepo designationRepo;
 
-    //get method for all employees
+    //get method for getting all employee's data
     @Test
     void showDetails() throws Exception {
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/Employee");
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/employees");
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk());
     }
@@ -46,15 +45,23 @@ class EmployeeControllerTest {
     //get method for particular employees. checking for right employee
     @Test
     void testShowDetailsRight() throws Exception {
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/Employee/2");
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/employees/2");
         mockMvc.perform(requestBuilder)
                 .andExpect(status().isOk());
+    }
+
+    //get method for particular employees. checking for wrong employee having employee id negative
+    @Test
+    void testShowDetailsWrongEmployeeIdNegative() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/employees/-2");
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest());
     }
 
     //get method for particular employees. checking for wrong employee ID
     @Test
     void testShowDetailsWrong() throws Exception {
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/Employee/43");
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.get("/employees/43");
         MvcResult mvcResult = mockMvc.perform(requestBuilder)
                 .andExpect(status().isNotFound())
                 .andReturn();
@@ -63,13 +70,12 @@ class EmployeeControllerTest {
         assertEquals("Not Valid Employee ID", content);
     }
 
-
     //post method. inserting the right employee
     @Test
     void addDetailsRight() throws Exception {
         Employee employee = new Employee("Lokesh", "Intern", 4);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -81,7 +87,7 @@ class EmployeeControllerTest {
     void addDetailsWrongJobTitle() throws Exception {
         Employee employee = new Employee("Sohil", "CEO", 1);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -91,13 +97,12 @@ class EmployeeControllerTest {
         assertEquals("Can Not Insert Record, Not a Valid Job Title", content);
     }
 
-
     //post method. inserting the wrong employee as director. trying to insert intern with no manager
     @Test
     void addDetailsWrongManager() throws Exception {
-        Employee employee = new Employee("Ojha", "Intern", 0);
+        Employee employee = new Employee("Ojha", "Intern", -1);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -112,7 +117,7 @@ class EmployeeControllerTest {
     void addDetailsWrongDirector() throws Exception {
         Employee employee = new Employee("Ramesh", "Director", 4);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -127,7 +132,7 @@ class EmployeeControllerTest {
     void addDetailsWrongManagerID() throws Exception {
         Employee employee = new Employee("Mohan", "QA", 342);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -142,7 +147,7 @@ class EmployeeControllerTest {
     void addDetailsWrongManagerIdWithDirector() throws Exception {
         Employee employee = new Employee("Mohan", "Director", 335);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -155,9 +160,9 @@ class EmployeeControllerTest {
     //post method. inserting right record as director without manager
     @Test
     void addDetailsRightDirectorWithoutManager() throws Exception {
-        Employee employee = new Employee("Lokesh", "Director", 0);
+        Employee employee = new Employee("Lokesh", "Director", -1);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -169,7 +174,7 @@ class EmployeeControllerTest {
     void addDetailsWrongNameEmpty() throws Exception {
         Employee employee = new Employee("", "Developer", 4);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -181,7 +186,7 @@ class EmployeeControllerTest {
     void addDetailsWrongJobTitleEmpty() throws Exception {
         Employee employee = new Employee("Suresh", "", 4);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -193,7 +198,7 @@ class EmployeeControllerTest {
     void addDetailsWrongNameWithNumbers() throws Exception {
         Employee employee = new Employee("Suresh123", "DevOps", 1);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -205,42 +210,39 @@ class EmployeeControllerTest {
     void addDetailsWrongNameWithSymbols() throws Exception {
         Employee employee = new Employee("jaya@ojha", "DevOps", 1);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
     }
 
-
     //post method. inserting wrong record as we are sending nothing
     @Test
     void addDetailsWrongWithoutData() throws Exception {
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee");
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees");
 
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
     }
-
 
     //post method. inserting wrong record as name with jobtitle null
     @Test
     void addDetailsWrongJobTitleNull() throws Exception {
         Employee employee = new Employee("Manna", null, 3);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
     }
 
-
     //post method. inserting wrong record as name with name null
     @Test
     void addDetailsWrongNameNull() throws Exception {
         Employee employee = new Employee(null, "Intern", 3);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -252,20 +254,19 @@ class EmployeeControllerTest {
     void addDetailsWrongManagerIdNull() throws Exception {
         Employee employee = new Employee("Mukesh", "Intern", null);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/Employee")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/employees")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
     }
 
-
     //put method, updating right details with replace as false
     @Test
     void putEmployeeRightReplaceFalse() throws Exception {
         PutEmployee employee = new PutEmployee("Lokesh", "Manager", 1, false);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/2")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/2")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -277,7 +278,7 @@ class EmployeeControllerTest {
     void putEmployeeRightReplaceTrue() throws Exception {
         PutEmployee employee = new PutEmployee("Modi", "Manager", 1, true);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/2")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/2")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
 
@@ -287,7 +288,7 @@ class EmployeeControllerTest {
     //put method, updating wrong details with no data at all
     @Test
     void putEmployeeWrongNoData() throws Exception {
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/4");
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/4");
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
     }
 
@@ -296,7 +297,7 @@ class EmployeeControllerTest {
     void putEmployeeWrongNameNull() throws Exception {
         PutEmployee employee = new PutEmployee(null, "Manager", 1, true);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/3")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/3")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -307,7 +308,7 @@ class EmployeeControllerTest {
     void putEmployeeWrongJobTitleNull() throws Exception {
         PutEmployee employee = new PutEmployee("Ojha", null, 1, true);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/4")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/4")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -318,7 +319,7 @@ class EmployeeControllerTest {
     void putEmployeeWrongManagerIdNull() throws Exception {
         PutEmployee employee = new PutEmployee("Loki", "Manager", null, true);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/1")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/1")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -329,7 +330,7 @@ class EmployeeControllerTest {
     void putEmployeeWrongReplaceNull() throws Exception {
         PutEmployee employee = new PutEmployee("Sourav", "Manager", 1, null);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/6")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/6")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -338,9 +339,9 @@ class EmployeeControllerTest {
     //put method, updating wrong details as wrong jobtitle
     @Test
     void putEmployeeWrongJobTitle() throws Exception {
-        PutEmployee employee = new PutEmployee("Sourav", "CEO", 0, true);
+        PutEmployee employee = new PutEmployee("Sourav", "CEO", -1, true);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/1")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/1")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -351,7 +352,7 @@ class EmployeeControllerTest {
     void putEmployeeWrongNameEmpty() throws Exception {
         PutEmployee employee = new PutEmployee("", "CEO", 1, true);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/5")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/5")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -362,7 +363,7 @@ class EmployeeControllerTest {
     void putEmployeeWrongJobTitleEmpty() throws Exception {
         PutEmployee employee = new PutEmployee("Rajesh", "", 1, false);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/5")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/5")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -373,7 +374,7 @@ class EmployeeControllerTest {
     void putEmployeeWrongName() throws Exception {
         PutEmployee employee = new PutEmployee("raja123ojha", "DevOps", 2, true);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/5")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/5")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -384,7 +385,7 @@ class EmployeeControllerTest {
     void putEmployeeWrongNameWithCharacter() throws Exception {
         PutEmployee employee = new PutEmployee("Umesh@soni", "DevOps", 1, false);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/5")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/5")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -395,7 +396,7 @@ class EmployeeControllerTest {
     void putEmployeeWrongManagerLowDesignation() throws Exception {
         PutEmployee employee = new PutEmployee("Akash", "Manager", 2, false);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/6")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/6")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
@@ -406,25 +407,24 @@ class EmployeeControllerTest {
     void putEmployeeWrongSubordinateHighDesignation() throws Exception {
         PutEmployee employee = new PutEmployee("Priyanka", "Intern", 1, true);
         String input = mapToJson(employee);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/Employee/2")
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.put("/employees/4")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .content(input);
         mockMvc.perform(requestBuilder).andExpect(status().isBadRequest());
     }
 
-
     //delete method. for deleting right employee
     @Test
     void deletePlayerRight() throws Exception {
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/Employee/3");
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/employees/3");
         mockMvc.perform(requestBuilder)
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     //delete method. for deleting wrong employee
     @Test
     void deletePlayerWrongId() throws Exception {
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/Employee/567");
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/employees/567");
         MvcResult mvcResult = mockMvc.perform(requestBuilder)
                 .andExpect(status().isNotFound())
                 .andReturn();
@@ -436,7 +436,7 @@ class EmployeeControllerTest {
     //delete method. for deleting the Director having subordinates
     @Test
     void deletePlayerWrongManagerWithSubordinates() throws Exception {
-        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/Employee/1");
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/employees/1");
         MvcResult mvcResult = mockMvc.perform(requestBuilder)
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -444,6 +444,15 @@ class EmployeeControllerTest {
         String content = mvcResult.getResponse().getContentAsString();
         assertEquals("Can Not Delete Employee as He is Director Having Subordinates", content);
     }
+
+    //delete method. for deleting wrong employee having id as negative
+    @Test
+    void deletePlayerWrongEmployeeIdNegative() throws Exception {
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.delete("/employees/-3");
+        mockMvc.perform(requestBuilder)
+                .andExpect(status().isBadRequest());
+    }
+
 
     private String mapToJson(Object obj) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();

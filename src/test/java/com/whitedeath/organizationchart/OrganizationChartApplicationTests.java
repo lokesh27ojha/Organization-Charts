@@ -1,10 +1,11 @@
 package com.whitedeath.organizationchart;
 
-import org.junit.jupiter.api.Test;
+
 import org.springframework.boot.test.context.SpringBootTest;
+import org.testng.annotations.Test;
 
 @SpringBootTest
-class OrganizationChartApplicationTests {
+public class OrganizationChartApplicationTests {
     @Test
     void contextLoads() {
 

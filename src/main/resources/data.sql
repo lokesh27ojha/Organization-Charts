@@ -7,8 +7,8 @@ values (1, 'Director', 1),
        (6, 'QA', 4),
        (7, 'Intern', 5);
 
-/*insert into Employee(ID,NAME,JOB_TITLE,MANAGER_ID)
-		values(1,'Thor','Director',0),
+insert into Employee(ID, NAME, JOB_TITLE, MANAGER_ID)
+values (1, 'Thor', 'Director', -1),
 		(2,'IronMan','Manager',1),
 		(3,'Hulk','Lead',1),
 		(4,'CaptainAmerica','Manager',1),
@@ -18,4 +18,3 @@ values (1, 'Director', 1),
 		(8,'AntMan','Lead',4),
 		(9,'SpiderMan','Intern',2),
 		(10,'BlackWidow','Developer',3);
-*/

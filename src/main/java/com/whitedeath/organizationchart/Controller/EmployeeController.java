@@ -21,7 +21,6 @@ import java.util.Map;
 
 @RestController
 public class EmployeeController {
-
     private final Comparator<Employee> employeeComparator;
     private final EmployeeRepo employeeRepo;
     private final DesignationRepo designationRepo;
