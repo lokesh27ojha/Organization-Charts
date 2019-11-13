@@ -1,5 +1,5 @@
-insert into Designation(DESIGNATION_ID, NAME, LEVEL_ID)
-values (1, 'Director', 1),
+insert into designation(DESIGNATION_ID, NAME, LEVEL_ID)
+        values (1, 'Director', 1),
        (2, 'Manager', 2),
        (3, 'Lead', 3),
        (4, 'Developer', 4),
@@ -7,8 +7,8 @@ values (1, 'Director', 1),
        (6, 'QA', 4),
        (7, 'Intern', 5);
 
-insert into Employee(ID, NAME, JOB_TITLE, MANAGER_ID)
-values (1, 'Thor', 'Director', -1),
+insert into employee(ID, NAME, JOB_TITLE, MANAGER_ID)
+        values (1, 'Thor', 'Director', -1),
 		(2,'IronMan','Manager',1),
 		(3,'Hulk','Lead',1),
 		(4,'CaptainAmerica','Manager',1),
