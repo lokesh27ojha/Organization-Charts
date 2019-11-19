@@ -8,7 +8,7 @@ spec:
   rules:
     - http:
         paths:
-          - path: /employees/?(.*)
+          - path: /employees
             backend:
               serviceName: organization-charts-service
-              servicePort: 3000
+              servicePort: 8080

@@ -2,6 +2,8 @@ package com.whitedeath.organizationchart.service;
 
 import com.whitedeath.organizationchart.Model.Designation;
 import com.whitedeath.organizationchart.Repository.DesignationRepo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,8 @@ import java.util.List;
 public class DesignationService {
     private Comparator<Designation> designationComparator;
     private DesignationRepo designationRepo;
+
+    private final static Logger log = LoggerFactory.getLogger(DesignationService.class);
 
     public DesignationService(DesignationRepo drepo) {
         designationComparator = (d1, d2) -> {
@@ -28,6 +32,7 @@ public class DesignationService {
     public ResponseEntity<List<Designation>> getAllDesignations() {
         List<Designation> designation = designationRepo.findAll();
         designation.sort(designationComparator);
+        log.info("List of Designations is fetched");
         return new ResponseEntity<>(designation, HttpStatus.OK);
     }
 

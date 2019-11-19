@@ -18,3 +18,4 @@ insert into employee(ID, NAME, JOB_TITLE, MANAGER_ID)
 		(8,'AntMan','Lead',4),
 		(9,'SpiderMan','Intern',2),
 		(10,'BlackWidow','Developer',3);
+
