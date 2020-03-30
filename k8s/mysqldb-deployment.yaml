@@ -17,8 +17,8 @@ spec:
           persistentVolumeClaim:
             claimName: database-persistent-volume-claim
       containers:
-        - name: mysql
-          image: mysql
+        - name: mysqldb
+          image: mysql:5.7.28
           ports:
             - containerPort: 3306
           volumeMounts:
@@ -27,9 +27,6 @@ spec:
               subPath: mysql
           env:
             - name: MYSQL_ROOT_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mysqldbpassword
-                  key: MYSQLDBPASSWORD
+              value: 'root'
             - name: MYSQL_DATABASE
               value: 'employee'

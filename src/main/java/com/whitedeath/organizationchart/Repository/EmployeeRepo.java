@@ -12,6 +12,8 @@ public interface EmployeeRepo extends JpaRepository<Employee, Integer> {
 
     List<Employee> getEmployeesByManagerIdAndIdNotLike(Integer managerId, Integer id);
 
+    List<Employee> getEmployeeByJobTitle(String jobTitle);
+
     @Modifying
     @Query("update Employee emp set emp.managerId =?1 where emp.managerId =?2")
     void updateEmployee(Integer newManagerId, Integer oldManagerId);

@@ -1,7 +1,9 @@
 package com.whitedeath.organizationchart.service;
 
 import com.whitedeath.organizationchart.Model.Designation;
+import com.whitedeath.organizationchart.Model.PostDesignation;
 import com.whitedeath.organizationchart.Repository.DesignationRepo;
+import com.whitedeath.organizationchart.Repository.EmployeeRepo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -15,10 +17,11 @@ import java.util.List;
 public class DesignationService {
     private Comparator<Designation> designationComparator;
     private DesignationRepo designationRepo;
+    private EmployeeRepo employeeRepo;
 
     private final static Logger log = LoggerFactory.getLogger(DesignationService.class);
 
-    public DesignationService(DesignationRepo drepo) {
+    public DesignationService(DesignationRepo drepo, EmployeeRepo erepo) {
         designationComparator = (d1, d2) -> {
             if (d1.getLevelId().equals(d2.getLevelId()))
                 return d1.getName().compareTo(d2.getName());
@@ -26,6 +29,7 @@ public class DesignationService {
                 return d1.getLevelId() < d2.getLevelId() ? -1 : 1;
         };
         this.designationRepo = drepo;
+        this.employeeRepo = erepo;
     }
 
 
@@ -37,37 +41,49 @@ public class DesignationService {
     }
 
 
-    public ResponseEntity<Object> getSingleDesignations(Integer designation_id) {
-        if (designation_id < 0)
-            return new ResponseEntity<>("Not Valid Designation ID: " + designation_id, HttpStatus.BAD_REQUEST);
-        if (!designationRepo.existsById(designation_id))
-            return new ResponseEntity<>("Not Valid Designation ID: " + designation_id, HttpStatus.NOT_FOUND);
-
-        Designation d = designationRepo.findById(designation_id).orElse(null);
+    public ResponseEntity<Object> getSingleDesignations(String jobTitle) {
+        if (designationRepo.getDesignationByName(jobTitle) == null)
+            return new ResponseEntity<>("No Record Exist for Designation: " + jobTitle, HttpStatus.NOT_FOUND);
+        Designation d = designationRepo.getDesignationByName(jobTitle);
         return new ResponseEntity<>(d, HttpStatus.OK);
     }
 
 
-    public ResponseEntity<Object> insertDesignations(Designation d) {
-        if (d.getLevelId() < 0)
-            return new ResponseEntity<>("Can Not Insert Record, Level Id is less than 0", HttpStatus.BAD_REQUEST);
-        if (d.getLevelId() == null)
-            return new ResponseEntity<>("Can Not Insert Record, Level Id is Null", HttpStatus.BAD_REQUEST);
-        if (d.getName().isEmpty() || d.getName() == null)
-            return new ResponseEntity<>("Can Not Insert Record, Name is Empty", HttpStatus.BAD_REQUEST);
-        if (d.getDesignationId() != null)
-            return new ResponseEntity<>("Can Not Insert Record, Don't Provide designationId", HttpStatus.BAD_REQUEST);
-        designationRepo.save(d);
-        return new ResponseEntity<>(d, HttpStatus.CREATED);
+    public ResponseEntity<Object> insertDesignations(PostDesignation d) {
+        if (d.getDesignationId() != null || d.getLevelId() != null)
+            return new ResponseEntity<>("Dont Provide LevelId od DesignationId", HttpStatus.BAD_REQUEST);
+        if (designationRepo.getDesignationByName(d.getName()) != null)
+            return new ResponseEntity<>("Designation Already Exist : " + d.getName(), HttpStatus.BAD_REQUEST);
+        if (designationRepo.getDesignationByName(d.getSuperiorDesignation()) == null)
+            return new ResponseEntity<>("Superior Designation Does not Exist : " + d.getSuperiorDesignation(), HttpStatus.BAD_REQUEST);
+        Designation designation = new Designation();
+        if (d.getName().equals("Director")) {
+            designation.setLevelId(1);
+            designation.setName(d.getName());
+            designationRepo.save(designation);
+        }
+        designation.setName(d.getName());
+        if (d.getColleague()) {
+            Designation superior = designationRepo.getDesignationByName(d.getSuperiorDesignation());
+            Designation junior = designationRepo.getFirstByLevelIdGreaterThanOrderByLevelId(superior.getLevelId());
+            designation.setLevelId(junior.getLevelId());
+            designationRepo.save(designation);
+        } else {
+            Designation superior = designationRepo.getDesignationByName(d.getSuperiorDesignation());
+            designationRepo.setAllLowerDesignation(superior.getLevelId());
+            designation.setLevelId(superior.getLevelId() + 1);
+            designationRepo.save(designation);
+        }
+        return new ResponseEntity<>(designation, HttpStatus.CREATED);
     }
 
 
-    public ResponseEntity<Object> deleteDesignation(int designation_id) {
-        if (designation_id < 0)
-            return new ResponseEntity<>("No Record Exist for ID : " + designation_id, HttpStatus.BAD_REQUEST);
-        if (!designationRepo.existsById(designation_id))
-            return new ResponseEntity<>("No Record Exist for ID: " + designation_id, HttpStatus.NOT_FOUND);
-        Designation d = designationRepo.getOne(designation_id);
+    public ResponseEntity<Object> deleteDesignation(String jobTitle) {
+        if (designationRepo.getDesignationByName(jobTitle) == null)
+            return new ResponseEntity<>("No Record Exist for Designation: " + jobTitle, HttpStatus.NOT_FOUND);
+        if (employeeRepo.getEmployeeByJobTitle(jobTitle) != null)
+            return new ResponseEntity<>("Can not Delete this Designation, some Employee having this post: " + jobTitle, HttpStatus.BAD_REQUEST);
+        Designation d = designationRepo.getDesignationByName(jobTitle);
         designationRepo.delete(d);
         return new ResponseEntity<>("Deleted", HttpStatus.NO_CONTENT);
     }
