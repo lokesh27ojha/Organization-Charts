@@ -1,0 +1,25 @@
+version: "3"
+services:
+  organization-charts:
+    build: .
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    networks:
+      - employee-mysql
+    depends_on:
+      - mysql-standalone
+
+  mysql-standalone:
+    image: mysql
+    networks:
+      - employee-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: employee
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: root
+
+networks:
+  employee-mysql:
+

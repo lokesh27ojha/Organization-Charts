@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: organization-charts-service
+spec:
+  type: ClusterIP
+  selector:
+    component: chart
+  ports:
+    - port: 8080
+      targetPort: 8080

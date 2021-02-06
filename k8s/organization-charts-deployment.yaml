@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: organization-charts-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: chart
+  template:
+    metadata:
+      labels:
+        component: chart
+    spec:
+      containers:
+        - name: organization-charts
+          image: lokesh27ojha/organization-charts
+          ports:
+            - containerPort: 8080
